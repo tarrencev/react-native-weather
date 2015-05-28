@@ -17,104 +17,20 @@ var moment = require('moment');
 var WeatherDetail = require('./app/weatherDetail');
 var WeatherSummaryList = require('./app/weatherSummaryList');
 
-var response = {
- "query": {
-  "count": 1,
-  "created": "2015-05-27T05:27:26Z",
-  "results": {
-   "channel": {
-    "location": {
-     "city": "San Francisco",
-     "country": "United States",
-     "region": "CA"
-    },
-    "units": {
-     "distance": "mi",
-     "pressure": "in",
-     "speed": "mph",
-     "temperature": "F"
-    },
-    "wind": {
-     "chill": "57",
-     "direction": "250",
-     "speed": "13"
-    },
-    "atmosphere": {
-     "humidity": "77",
-     "pressure": "30.02",
-     "rising": "1",
-     "visibility": "10"
-    },
-    "astronomy": {
-     "sunrise": "5:50 am",
-     "sunset": "8:19 pm"
-    },
-    "item": {
-     "title": "Conditions for San Francisco, CA at 9:53 pm PDT",
-     "lat": "37.75",
-     "long": "-122.44",
-     "pubDate": "Tue, 26 May 2015 9:53 pm PDT",
-     "condition": {
-      "code": "26",
-      "date": "Tue, 26 May 2015 9:53 pm PDT",
-      "temp": "57",
-      "text": "Cloudy"
-     },
-     "forecast": [
-      {
-       "code": "26",
-       "date": "26 May 2015",
-       "day": "Tue",
-       "high": "59",
-       "low": "51",
-       "text": "Cloudy"
-      },
-      {
-       "code": "30",
-       "date": "27 May 2015",
-       "day": "Wed",
-       "high": "61",
-       "low": "52",
-       "text": "AM Clouds/PM Sun"
-      },
-      {
-       "code": "28",
-       "date": "28 May 2015",
-       "day": "Thu",
-       "high": "61",
-       "low": "52",
-       "text": "Mostly Cloudy"
-      },
-      {
-       "code": "30",
-       "date": "29 May 2015",
-       "day": "Fri",
-       "high": "61",
-       "low": "52",
-       "text": "AM Clouds/PM Sun"
-      },
-      {
-       "code": "28",
-       "date": "30 May 2015",
-       "day": "Sat",
-       "high": "62",
-       "low": "52",
-       "text": "Mostly Cloudy"
-      }
-     ],
-    }
-   }
-  }
- }
-};
-
 var rndemo = React.createClass({
 
   componentWillMount() {
-
+    fetch('https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22San%20Francisco%2C%20CA%22)&format=json')
+      .then((response) => response.json())
+      .then((responseJSON) => {
+        this.setState(this.processResponse(responseJSON));
+      })
+      .catch((error) => {
+        console.warn(error);
+      });
   },
 
-  getInitialState() {
+  processResponse(response) {
     var results = response.query.results;
     var item = results.channel.item;
     var units = results.channel.units;
@@ -137,10 +53,15 @@ var rndemo = React.createClass({
         location: results.channel.location.city + ', ' + results.channel.location.region,
       },
       weekSummary: weekSummary,
-    }
+    };
   },
 
   render: function() {
+
+    if (!this.state) {
+      return (<Text>Loading...</Text>);
+    }
+
     return (
       <View style={styles.container}>
         <WeatherDetail
