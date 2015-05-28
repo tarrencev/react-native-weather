@@ -6,7 +6,7 @@ var Images = require('./utils/images');
 
 var WeatherConditionImage = React.createClass({
 
-  render: function() {
+  render() {
     return (
       <Image
         style={this.props.dimensions}

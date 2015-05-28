@@ -10,14 +10,14 @@ var WeatherSummaryListItem = require('./weatherSummaryListItem');
 
 var WeatherSummaryList = React.createClass({
 
-  getInitialState: function() {
+  getInitialState() {
     var ds = new ListView.DataSource({rowHasChanged: (r1, r2) => r1 !== r2});
     return {
       dataSource: ds.cloneWithRows(this.props.dataSource),
     };
   },
 
-  render: function() {
+  render() {
     return (
       <ListView
         dataSource={this.state.dataSource}

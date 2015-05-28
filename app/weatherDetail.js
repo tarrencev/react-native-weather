@@ -12,7 +12,7 @@ var WeatherConditionImage = require('./weatherConditionImage');
 
 var WeatherDetail = React.createClass({
 
-  render: function() {
+  render() {
     return (
       <View style={styles.container}>
         <View style={styles.avatarContainer}>

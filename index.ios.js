@@ -10,27 +10,53 @@ var {
   StyleSheet,
   Text,
   View,
+  StatusBarIOS,
 } = React;
 
 var moment = require('moment');
-
+var LocationManager = require('NativeModules').LocationManager;
 var WeatherDetail = require('./app/weatherDetail');
 var WeatherSummaryList = require('./app/weatherSummaryList');
 
 var rndemo = React.createClass({
 
   componentWillMount() {
-    fetch('https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D%22San%20Francisco%2C%20CA%22)&format=json')
+    StatusBarIOS.setStyle(1);
+    this.getLocation((error, response) => {
+      this.fetchWeather(response.locality, response.region);
+    });
+  },
+
+  render() {
+
+    if (!this.state) {
+      return (<Text>Loading...</Text>);
+    }
+
+    return (
+      <View style={styles.container}>
+        <WeatherDetail
+          {...this.state.current}
+        />
+        <WeatherSummaryList
+          dataSource={this.state.weekSummary}
+        />
+      </View>
+    );
+  },
+
+  fetchWeather(city, state) {
+    var encodedLocation = encodeURIComponent('"' + city + ',' + state + '"');
+    fetch('https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid%20in%20(select%20woeid%20from%20geo.places(1)%20where%20text%3D' + encodedLocation + ')&format=json')
       .then((response) => response.json())
-      .then((responseJSON) => {
-        this.setState(this.processResponse(responseJSON));
-      })
+      .then((responseJSON) => this.processWeatherResponse(responseJSON))
+      .then((parsedResponse) => this.setState(parsedResponse))
       .catch((error) => {
         console.warn(error);
       });
   },
 
-  processResponse(response) {
+  processWeatherResponse(response) {
     var results = response.query.results;
     var item = results.channel.item;
     var units = results.channel.units;
@@ -56,21 +82,15 @@ var rndemo = React.createClass({
     };
   },
 
-  render: function() {
-
-    if (!this.state) {
-      return (<Text>Loading...</Text>);
-    }
-
-    return (
-      <View style={styles.container}>
-        <WeatherDetail
-          {...this.state.current}
-        />
-        <WeatherSummaryList
-          dataSource={this.state.weekSummary}
-        />
-      </View>
+  getLocation(callback) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        LocationManager.getLocationInfoFromCoords(
+          position.coords.latitude,
+          position.coords.longitude,
+          callback
+        );
+      }
     );
   },
 });

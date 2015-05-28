@@ -11,9 +11,9 @@ var Theme = require('./utils/theme');
 
 var WeatherSummaryListItem = React.createClass({
 
-  render: function() {
+  render() {
     return (
-      <View style={[styles.container, { backgroundColor: Theme.getColor(this.props.row)}]}>
+      <View style={[styles.container, {backgroundColor: Theme.getColor(this.props.row)}]}>
         <View style={styles.dateContainer}>
           <Text style={styles.textBase}>
             {this.props.date}
